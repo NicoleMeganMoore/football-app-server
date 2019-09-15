@@ -1,0 +1,7 @@
+{
+  "env": {
+    "MONGO_USER": "nikki-moore",
+    "MONGO_PASSWORD": "J8igWGq3OfV8fdFA",
+    "MONGO_DB": "players-react-dev"
+  }
+}

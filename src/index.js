@@ -1,56 +1,35 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const graphqlHttp = require("express-graphql");
-const { buildSchema } = require("graphql");
-// const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
-// import { resolvers } from "./resolvers";
-// import { typeDefs } from "./typeDefs";
+const graphQlSchema = require("./graphql/schema/index");
+const graphQlResolvers = require("./graphql/resolvers/index");
 
-const server = async () => {
-  const app = express();
+const app = express();
+const port = 8080;
 
-  app.use(bodyParser.json());
+app.use(bodyParser.json());
 
-  app.use(
-    "/graphql",
-    graphqlHttp({
-      schema: buildSchema(`
-        type RootQuery {
-          players: [String!]!
-        }
+app.use(
+  "/graphql",
+  graphqlHttp({
+    schema: graphQlSchema,
+    rootValue: graphQlResolvers,
+    graphiql: true // Sandbox GUI at "/graphql"
+  })
+);
 
-        type RootMutation {
-          createTeam(name: String): String
-          addPlayer(id: Int): Int
-        }
-        
-        schema {
-          query: RootQuery
-          mutation: RootMutation
-        }
-      `),
-      rootValue: {
-        players: () => {
-          return ["Player 1", "Player 2", "Player 3"];
-        },
-        createTeam: args => {
-          const teamName = args.name;
-          return teamName;
-        },
-        addPlayer: args => {
-          const playerId = args.playerId;
-          return playerId;
-        }
-      },
-      graphiql: true // Sandbox GUI at "/graphql"
-    })
-  );
-
-  const port = 8080;
-  app.listen({ port }, () => {
-    console.log(`Magic happens on port ${port}`);
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@footballapp-uksbe.azure.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+    { useNewUrlParser: true }
+  )
+  .then(() => {
+    app.listen({ port }, () => {
+      console.log(`Magic happens on port ${port}`);
+    });
+  })
+  .catch(err => {
+    console.log(err);
   });
-};
-
-server();
