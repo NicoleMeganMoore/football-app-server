@@ -1,5 +1,5 @@
-const User = require("../../models/user");
-const League = require("../../models/league");
+const User = require("../../../models/user");
+const League = require("../../../models/league");
 
 const defaultLeagueSettings = {
   pts_per_passing_yd: 0.04,
