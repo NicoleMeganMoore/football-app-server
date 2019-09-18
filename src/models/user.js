@@ -5,30 +5,33 @@ const Schema = mongoose.Schema;
 
 autoIncrement.initialize(mongoose.connection);
 
-const userSchema = new Schema({
-  email: {
-    type: String,
-    required: true
+const userSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    first_name: {
+      type: String,
+      required: true
+    },
+    last_name: {
+      type: String,
+      required: true
+    },
+    leagues: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Team"
+      }
+    ]
   },
-  password: {
-    type: String,
-    required: true
-  },
-  first_name: {
-    type: String,
-    required: true
-  },
-  last_name: {
-    type: String,
-    required: true
-  },
-  leagues: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Team"
-    }
-  ]
-});
+  { timestamps: true }
+);
 
 userSchema.plugin(autoIncrement.plugin, { model: "User", field: "id" });
 
