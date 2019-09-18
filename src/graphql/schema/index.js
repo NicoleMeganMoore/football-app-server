@@ -39,16 +39,17 @@ module.exports = buildSchema(`
     week: Int!
     league: League!
     teams: [Team!]!
+    winner: User
   }
 
   type Team {
     _id: ID!
     id: Int!
     team_name: String!
-    team_photo_url: String!
-    owner: User
-    league: League
-    match: Match
+    team_photo_url: String
+    owner: User!
+    league: League!
+    match: Match!
     players: [String]!
     total_points: Float!
     is_winner: Boolean
@@ -81,19 +82,20 @@ module.exports = buildSchema(`
   input MatchInput {
     week: Int!
     league_id: Int!
-    opponent_email: String!
   }
 
   input TeamInput {
     team_name: String!
-    team_photo_url: String!
-    league_id: String!
+    team_photo_url: String
+    league_id: Int!
+    match_id: Int!
   }
 
   type RootQuery {
     users: [User!]!
     teams: [Team!]!
     leagues: [League!]!
+    matches: [Match!]!
   }
 
   type RootMutation {

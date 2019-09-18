@@ -1,20 +1,17 @@
-import mongoose from "mongoose";
-
+const mongoose = require("mongoose");
+const autoIncrement = require("mongoose-auto-increment");
 const Schema = mongoose.Schema;
+
+autoIncrement.initialize(mongoose.connection);
 
 const teamSchema = new Schema(
   {
-    id: {
-      type: Number,
-      required: true
-    },
     team_name: {
       type: String,
       required: true
     },
     team_photo_url: {
-      type: String,
-      required: true
+      type: String
     },
     owner: {
       type: Schema.Types.ObjectId,
@@ -43,5 +40,7 @@ const teamSchema = new Schema(
   },
   { timestamps: true }
 );
+
+teamSchema.plugin(autoIncrement.plugin, { model: "Team", field: "id" });
 
 module.exports = mongoose.model("Team", teamSchema);

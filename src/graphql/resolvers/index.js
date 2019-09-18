@@ -7,7 +7,14 @@ const createLeague = require("./leagues/createLeague");
 // const deleteLeague = require("./leagues/deleteLeague");
 const createUser = require("./users/createUser");
 
-const { getUsersByIds, getLeagues } = require("./helperFunctions");
+const {
+  getUser,
+  getUsersByIds,
+  getLeagues,
+  getTeams,
+  getLeague,
+  getMatch
+} = require("./helperFunctions");
 
 module.exports = {
   users: async () => {
@@ -43,7 +50,24 @@ module.exports = {
       return teams.map(team => {
         return {
           ...team._doc,
-          owner: user.bind(this, team._doc.owner)
+          league: getLeague.bind(this, team._doc.league),
+          match: getMatch.bind(this, team._doc.match),
+          owner: getUser.bind(this, team._doc.owner)
+        };
+      });
+    } catch (err) {
+      throw err;
+    }
+  },
+  matches: async () => {
+    try {
+      const matches = await Match.find();
+      return matches.map(match => {
+        return {
+          ...match._doc,
+          teams: getTeams.bind(this, match._doc.teams),
+          winner: getUser.bind(this, match._doc.winner),
+          league: getLeague.bind(this, match._doc.league)
         };
       });
     } catch (err) {
@@ -57,21 +81,17 @@ module.exports = {
   createLeague: createLeague,
   createMatch: async args => {
     try {
-      const league = await League.findById(args.matchInput.league_id);
+      const league = await League.findOne({ id: args.matchInput.league_id });
       if (!league) {
         throw new Error("League not found.");
       }
 
       const match = new Match({
         week: args.matchInput.week,
-        league_id: args.matchInput.league_id,
-        opponent_email: args.matchInput.opponent_email
+        league: league
       });
 
       const newMatch = await match.save();
-      league.matches.push(newMatch);
-
-      await league.save();
       return { ...newMatch._doc };
     } catch (err) {
       throw err;
@@ -80,22 +100,36 @@ module.exports = {
   createTeam: async args => {
     try {
       // Change this to real match ID
-      const match = await Match.findById("5d7d71eb8be2018a7f3ff79e");
+      const match = await Match.findOne({ id: args.teamInput.match_id });
       if (!match) {
         throw new Error("Match not found.");
+      }
+
+      const league = await League.findOne({ id: args.teamInput.league_id });
+      if (!league) {
+        throw new Error("League not found.");
       }
 
       const team = new Team({
         team_name: args.teamInput.team_name,
         team_photo_url: args.teamInput.team_photo_url,
-        league: args.teamInput.league_id
+        players: [],
+        // CHANGE THIS TO CURRENT USER FROM AUTH
+        owner: "5d81905dcd8d991024a67118",
+        total_points: 0,
+        match: match,
+        league: league
       });
 
       const newTeam = await team.save();
       match.teams.push(team);
-
       await match.save();
-      return { ...newTeam._doc };
+
+      return {
+        ...newTeam._doc,
+        teams: getTeams.bind(this, match._doc.teams),
+        owner: getUser.bind(this, "5d81905dcd8d991024a67118")
+      };
     } catch (err) {
       throw err;
     }

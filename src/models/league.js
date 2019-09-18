@@ -1,16 +1,11 @@
 const mongoose = require("mongoose");
 const autoIncrement = require("mongoose-auto-increment");
-
 const Schema = mongoose.Schema;
 
 autoIncrement.initialize(mongoose.connection);
 
 const leagueSchema = new Schema(
   {
-    id: {
-      type: Number,
-      required: true
-    },
     league_name: {
       type: String,
       required: true

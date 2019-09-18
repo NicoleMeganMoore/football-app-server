@@ -1,6 +1,8 @@
-import mongoose from "mongoose";
-
+const mongoose = require("mongoose");
+const autoIncrement = require("mongoose-auto-increment");
 const Schema = mongoose.Schema;
+
+autoIncrement.initialize(mongoose.connection);
 
 const matchSchema = new Schema(
   {
@@ -29,5 +31,7 @@ const matchSchema = new Schema(
   },
   { timestamps: true }
 );
+
+matchSchema.plugin(autoIncrement.plugin, { model: "Match", field: "id" });
 
 module.exports = mongoose.model("Match", matchSchema);
