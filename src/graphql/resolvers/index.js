@@ -10,107 +10,94 @@ const createUser = require("./users/createUser");
 const { getUsersByIds, getLeagues } = require("./helperFunctions");
 
 module.exports = {
-  users: () => {
-    return User.find()
-      .then(users => {
-        return users.map(user => {
-          return {
-            ...user._doc,
-            leagues: getLeagues.bind(this, user._doc._id)
-          };
-        });
-      })
-      .catch(err => {
-        console.log(err);
+  users: async () => {
+    try {
+      const users = await User.find();
+      return users.map(user => {
+        return {
+          ...user._doc,
+          leagues: getLeagues.bind(this, user._doc._id)
+        };
       });
+    } catch (err) {
+      throw err;
+    }
   },
-  leagues: () => {
-    return League.find()
-      .then(leagues => {
-        return leagues.map(league => {
-          return {
-            ...league._doc,
-            user_list: getUsersByIds.bind(this, league.user_list)
-          };
-        });
-      })
-      .catch(err => {
-        console.log(err);
+  leagues: async () => {
+    try {
+      const leagues = await League.find();
+
+      return leagues.map(league => {
+        return {
+          ...league._doc,
+          user_list: getUsersByIds.bind(this, league.user_list)
+        };
       });
+    } catch (err) {
+      throw err;
+    }
   },
-  teams: () => {
-    return Team.find()
-      .then(teams => {
-        return teams.map(team => {
-          return {
-            ...team._doc,
-            owner: user.bind(this, team._doc.owner)
-          };
-        });
-      })
-      .catch(err => {
-        console.log(err);
+  teams: async () => {
+    try {
+      const teams = await Team.find();
+      return teams.map(team => {
+        return {
+          ...team._doc,
+          owner: user.bind(this, team._doc.owner)
+        };
       });
+    } catch (err) {
+      throw err;
+    }
   },
   createUser: createUser,
   // addUserToLeague: args => {
 
   // },
   createLeague: createLeague,
-  createMatch: args => {
-    const match = new Match({
-      week: args.matchInput.week,
-      league_id: args.matchInput.league_id,
-      opponent_email: args.matchInput.opponent_email
-    });
-    let createdMatch;
-    return match
-      .save()
-      .then(result => {
-        createdMatch = { ...result._doc };
-        return League.findById("fjlkwejflwekfjwef");
-      })
-      .then(league => {
-        if (!league) {
-          throw new Error("League not found.");
-        }
-        league.matches.push(match);
-        return league.save();
-      })
-      .then(() => {
-        return createdMatch;
-      })
-      .catch(err => {
-        console.log(err);
-        throw err;
+  createMatch: async args => {
+    try {
+      const league = await League.findById(args.matchInput.league_id);
+      if (!league) {
+        throw new Error("League not found.");
+      }
+
+      const match = new Match({
+        week: args.matchInput.week,
+        league_id: args.matchInput.league_id,
+        opponent_email: args.matchInput.opponent_email
       });
+
+      const newMatch = await match.save();
+      league.matches.push(newMatch);
+
+      await league.save();
+      return { ...newMatch._doc };
+    } catch (err) {
+      throw err;
+    }
   },
-  createTeam: args => {
-    const team = new Team({
-      team_name: args.teamInput.team_name,
-      team_photo_url: args.teamInput.team_photo_url,
-      league: args.teamInput.league_id
-    });
-    let createdTeam;
-    return team
-      .save()
-      .then(result => {
-        createdTeam = { ...result._doc };
-        return Match.findById("5d7d71eb8be2018a7f3ff79e");
-      })
-      .then(match => {
-        if (!match) {
-          throw new Error("Match not found.");
-        }
-        match.teams.push(team);
-        return match.save();
-      })
-      .then(() => {
-        return createdTeam;
-      })
-      .catch(err => {
-        console.log(err);
-        throw err;
+  createTeam: async args => {
+    try {
+      // Change this to real match ID
+      const match = await Match.findById("5d7d71eb8be2018a7f3ff79e");
+      if (!match) {
+        throw new Error("Match not found.");
+      }
+
+      const team = new Team({
+        team_name: args.teamInput.team_name,
+        team_photo_url: args.teamInput.team_photo_url,
+        league: args.teamInput.league_id
       });
+
+      const newTeam = await team.save();
+      match.teams.push(team);
+
+      await match.save();
+      return { ...newTeam._doc };
+    } catch (err) {
+      throw err;
+    }
   }
 };
