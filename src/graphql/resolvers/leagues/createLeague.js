@@ -1,6 +1,8 @@
 const User = require("../../../models/user");
 const League = require("../../../models/league");
 
+const { getUsersByEmails } = require("../helperFunctions");
+
 const defaultLeagueSettings = {
   pts_per_passing_yd: 0.04,
   pts_per_passing_td: 4,
@@ -15,31 +17,9 @@ const defaultLeagueSettings = {
   pts_per_reception: 0
 };
 
-const getUser = userId => {
-  return User.findById(userId)
-    .then(user => {
-      return { ...user._doc };
-    })
-    .catch(err => {
-      throw err;
-    });
-};
-
-const getUsers = userEmails => {
-  return User.find({ email: { $in: userEmails } })
-    .then(users => {
-      return users.map(user => {
-        return { ...user._doc, leagues: getUser.bind(this, user.leagues) };
-      });
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
-
 module.exports = args => {
   // Make sure both users exist in the DB
-  return getUsers([
+  return getUsersByEmails([
     args.leagueInput.user_email,
     args.leagueInput.opponent_email
   ])
@@ -74,13 +54,13 @@ module.exports = args => {
         .then(result => {
           createdLeague = {
             ...result._doc,
-            user_list: getUsers.bind(this, [
+            user_list: getUsersByEmails.bind(this, [
               args.leagueInput.user_email,
               args.leagueInput.opponent_email
             ])
           };
 
-          // save league in both users league arrays
+          // Save league in both users league arrays
           const promises = [];
           promises.push(
             new Promise((res, rej) => {

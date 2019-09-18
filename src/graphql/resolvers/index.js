@@ -5,61 +5,13 @@ const Team = require("../../models/team");
 
 const createLeague = require("./leagues/createLeague");
 // const deleteLeague = require("./leagues/deleteLeague");
-
 const createUser = require("./users/createUser");
 
-// const teams = teamIds => {
-//   return Team.find({ _id: { $in: teamIds } })
-//     .then(teams => {
-//       return teams.map(team => {
-//         return { ...team._doc, owner: user.bind(this, team.owner) };
-//       });
-//     })
-//     .catch(err => {
-//       console.log(err);
-//     });
-// };
-
-// const getUserByEmail = userEmail => {
-//   return User.findOne({ email: userEmail })
-//     .then(foundUser => {
-//       return { ...foundUser._doc };
-//     })
-//     .catch(err => {
-//       throw err;
-//     });
-// };
-
-// const team = teamId => {
-//   return Team.findById(teamId)
-//     .then(team => {
-//       return { ...team._doc };
-//     })
-//     .catch(err => {
-//       throw err;
-//     });
-// };
-
-const getLeagues = userId => {
-  return League.find({ user_list: userId })
-    .populate("user_list")
-    .then(leagues => {
-      return leagues.map(league => {
-        return {
-          ...league._doc
-          // user_list: getLeagueUserList.bind(this, user.leagues)
-        };
-      });
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
+const { getUsersByIds, getLeagues } = require("./helperFunctions");
 
 module.exports = {
   users: () => {
     return User.find()
-      .populate("leagues")
       .then(users => {
         return users.map(user => {
           return {
@@ -74,12 +26,11 @@ module.exports = {
   },
   leagues: () => {
     return League.find()
-      .populate("user_list")
       .then(leagues => {
         return leagues.map(league => {
           return {
-            ...league._doc
-            // user_list: getUsers
+            ...league._doc,
+            user_list: getUsersByIds.bind(this, league.user_list)
           };
         });
       })

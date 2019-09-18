@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 const User = require("../../../models/user");
+const { getLeagues } = require("../helperFunctions");
 
 module.exports = args => {
   return User.findOne({ email: args.userInput.email }).then(user => {
@@ -20,7 +21,12 @@ module.exports = args => {
         return user.save();
       })
       .then(result => {
-        return { ...result._doc, password: null };
+        return {
+          ...result._doc,
+          // This is not necessary since a new user will never have leagues to start with
+          leagues: getLeagues.bind(this, result._doc._id),
+          password: null
+        };
       })
       .catch(err => {
         throw err;
