@@ -11,11 +11,7 @@ module.exports = buildSchema(`
     leagues: [League]!
   }
 
-  type League {
-    _id: ID!
-    id: Int!
-    league_name: String!
-    user_list: [User!]!
+  type Settings {
     pts_per_passing_yd: Float!
     pts_per_passing_td: Int!
     pts_per_passing_int: Int!
@@ -27,6 +23,14 @@ module.exports = buildSchema(`
     pts_per_two_pt_conversion: Int!
     pts_per_fumble: Int!
     pts_per_reception: Float!
+  }
+
+  type League {
+    _id: ID!
+    id: Int!
+    league_name: String!
+    user_list: [User!]!
+    settings: Settings!
   }
 
   type Match {

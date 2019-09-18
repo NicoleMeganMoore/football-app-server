@@ -35,18 +35,20 @@ module.exports = async args => {
       league_name:
         args.leagueInput.league_name || `${users[0].first_name}'s League`,
       user_list: [users[0]._id, users[1]._id],
-      pts_per_passing_yd: defaultLeagueSettings.pts_per_passing_yd || 0.04,
-      pts_per_passing_td: defaultLeagueSettings.pts_per_passing_td || 4,
-      pts_per_passing_int: defaultLeagueSettings.pts_per_passing_int || -1,
-      pts_per_rushing_yd: defaultLeagueSettings.pts_per_rushing_yd || 0.1,
-      pts_per_rushing_td: defaultLeagueSettings.pts_per_rushing_td || 6,
-      pts_per_receiving_yd: defaultLeagueSettings.pts_per_receiving_yd || 0.1,
-      pts_per_receiving_td: defaultLeagueSettings.pts_per_receiving_td || 6,
-      pts_per_return_td: defaultLeagueSettings.pts_per_return_td || 6,
-      pts_per_two_pt_conversion:
-        defaultLeagueSettings.pts_per_two_pt_conversion || 2,
-      pts_per_fumble: defaultLeagueSettings.pts_per_fumble || -1,
-      pts_per_reception: defaultLeagueSettings.pts_per_reception || 0
+      settings: {
+        pts_per_passing_yd: defaultLeagueSettings.pts_per_passing_yd || 0.04,
+        pts_per_passing_td: defaultLeagueSettings.pts_per_passing_td || 4,
+        pts_per_passing_int: defaultLeagueSettings.pts_per_passing_int || -1,
+        pts_per_rushing_yd: defaultLeagueSettings.pts_per_rushing_yd || 0.1,
+        pts_per_rushing_td: defaultLeagueSettings.pts_per_rushing_td || 6,
+        pts_per_receiving_yd: defaultLeagueSettings.pts_per_receiving_yd || 0.1,
+        pts_per_receiving_td: defaultLeagueSettings.pts_per_receiving_td || 6,
+        pts_per_return_td: defaultLeagueSettings.pts_per_return_td || 6,
+        pts_per_two_pt_conversion:
+          defaultLeagueSettings.pts_per_two_pt_conversion || 2,
+        pts_per_fumble: defaultLeagueSettings.pts_per_fumble || -1,
+        pts_per_reception: defaultLeagueSettings.pts_per_reception || 0
+      }
     });
 
     let createdLeague;
