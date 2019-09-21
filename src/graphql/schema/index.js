@@ -9,6 +9,8 @@ module.exports = buildSchema(`
     first_name: String!
     last_name: String!
     leagues: [League]!
+    updatedAt: String!
+    createdAt: String!
   }
 
   type Settings {
@@ -31,6 +33,8 @@ module.exports = buildSchema(`
     league_name: String!
     user_list: [User!]!
     settings: Settings!
+    updatedAt: String!
+    createdAt: String!
   }
 
   type Match {
@@ -40,6 +44,8 @@ module.exports = buildSchema(`
     league: League!
     teams: [Team!]!
     winner: User
+    updatedAt: String!
+    createdAt: String!
   }
 
   type Team {
@@ -53,6 +59,8 @@ module.exports = buildSchema(`
     players: [String]!
     total_points: Float!
     is_winner: Boolean
+    updatedAt: String!
+    createdAt: String!
   }
 
   input UserInput {
@@ -101,8 +109,11 @@ module.exports = buildSchema(`
   type RootMutation {
     createUser(userInput: UserInput): User
     createLeague(leagueInput: LeagueInput): League
+    addUserToLeague(leagueId: ID!, userEmail: String!): League
     createMatch(matchInput: MatchInput): Match
     createTeam(teamInput: TeamInput): Team
+    deleteLeague(leagueId: ID!): Boolean
+    deleteMatch(matchId: ID!): Boolean
   }
 
   schema {

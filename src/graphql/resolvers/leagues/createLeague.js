@@ -35,6 +35,7 @@ module.exports = async args => {
       league_name:
         args.leagueInput.league_name || `${users[0].first_name}'s League`,
       user_list: [users[0]._id, users[1]._id],
+      // user_list: [creator],
       settings: {
         pts_per_passing_yd: defaultLeagueSettings.pts_per_passing_yd || 0.04,
         pts_per_passing_td: defaultLeagueSettings.pts_per_passing_td || 4,
