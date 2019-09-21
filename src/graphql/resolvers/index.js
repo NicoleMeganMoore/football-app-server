@@ -1,26 +1,23 @@
-const { createUser, users } = require("./users");
-const { teams, createTeam } = require("./teams");
-const { matches, deleteMatch, createMatch } = require("./matches");
-const {
-  createLeague,
-  deleteLeague,
-  leagues,
-  addUserToLeague
-} = require("./leagues");
+// const { createUser, users } = require("./users");
+// const { teams, createTeam } = require("./teams");
+// const { matches, deleteMatch, createMatch } = require("./matches");
+// const {
+//   createLeague,
+//   deleteLeague,
+//   leagues,
+//   addUserToLeague
+// } = require("./leagues");
 
-module.exports = {
-  users: users,
-  createUser: createUser,
+const usersResolver = require("./users");
+const leaguesResolver = require("./leagues");
+const teamsResolver = require("./teams");
+const matchesResolver = require("./matches");
 
-  leagues: leagues,
-  createLeague: createLeague,
-  deleteLeague: deleteLeague,
-  addUserToLeague: addUserToLeague,
-
-  teams: teams,
-  createTeam: createTeam,
-
-  matches: matches,
-  createMatch: createMatch,
-  deleteMatch: deleteMatch
+const rootResolver = {
+  ...usersResolver,
+  ...leaguesResolver,
+  ...teamsResolver,
+  ...matchesResolver
 };
+
+module.exports = rootResolver;
