@@ -2,12 +2,14 @@ const League = require("../../models/league");
 const Match = require("../../models/match");
 const Team = require("../../models/team");
 
-const { transformTeam } = require("./helperFunctions");
+const { checkAuthAndReturnUser, transformTeam } = require("./helperFunctions");
 
 module.exports = {
-  teams: async () => {
+  teams: async (args, req) => {
     try {
-      const teams = await Team.find();
+      await checkAuthAndReturnUser(req);
+
+      const teams = await Team.find({ owner: req.userId });
       return teams.map(team => {
         return transformTeam(team);
       });
@@ -15,7 +17,10 @@ module.exports = {
       throw err;
     }
   },
-  createTeam: async args => {
+  createTeam: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!");
+    }
     try {
       // Change this to real match ID
       const match = await Match.findOne({ id: args.teamInput.match_id });
@@ -32,8 +37,7 @@ module.exports = {
         team_name: args.teamInput.team_name,
         team_photo_url: args.teamInput.team_photo_url,
         players: [],
-        // CHANGE THIS TO CURRENT USER FROM AUTH
-        owner: "5d81905dcd8d991024a67118",
+        owner: req.userId,
         total_points: 0,
         match: match,
         league: league

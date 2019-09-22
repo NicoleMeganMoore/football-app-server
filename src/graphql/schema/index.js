@@ -13,6 +13,12 @@ module.exports = buildSchema(`
     createdAt: String!
   }
 
+  type AuthData {
+    userId: ID!
+    token: String!
+    tokenExpiration: Int!
+  }
+
   type Settings {
     pts_per_passing_yd: Float!
     pts_per_passing_td: Int!
@@ -72,8 +78,6 @@ module.exports = buildSchema(`
 
   input LeagueInput {
     league_name: String
-    opponent_email: String!
-    user_email: String!
     pts_per_passing_yd: Float
     pts_per_passing_td: Int
     pts_per_passing_int: Int
@@ -103,7 +107,9 @@ module.exports = buildSchema(`
     users: [User!]!
     teams: [Team!]!
     leagues: [League!]!
+    userLeagues: [League]!
     matches: [Match!]!
+    login(email: String!, password: String!): AuthData!
   }
 
   type RootMutation {

@@ -1,7 +1,14 @@
 const User = require("../../models/user");
 const League = require("../../models/league");
 
-const { transformLeague, getUsersByEmails } = require("./helperFunctions");
+const { checkAuthAndReturnUser } = require("./helperFunctions");
+
+const {
+  transformLeague,
+  getUsersByEmails,
+  getLeague,
+  getLeagues
+} = require("./helperFunctions");
 
 const defaultLeagueSettings = {
   pts_per_passing_yd: 0.04,
@@ -18,24 +25,22 @@ const defaultLeagueSettings = {
 };
 
 module.exports = {
-  createLeague: async args => {
+  createLeague: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!");
+    }
+
     // Make sure both users exist in the DB
     try {
-      const users = await getUsersByEmails([
-        args.leagueInput.user_email,
-        args.leagueInput.opponent_email
-      ]);
-
-      if (!users[0]) {
-        throw new Error("User email not found.");
-      } else if (!users[1]) {
-        throw new Error("Opponent email not found.");
+      const user = await User.findById(req.userId);
+      if (!user) {
+        throw new Error("User not found.");
       }
 
       const league = new League({
         league_name:
-          args.leagueInput.league_name || `${users[0].first_name}'s League`,
-        user_list: [users[0]._id, users[1]._id],
+          args.leagueInput.league_name || `${user._doc.first_name}'s League`,
+        user_list: [user._doc._id],
         // user_list: [creator],
         settings: {
           pts_per_passing_yd: defaultLeagueSettings.pts_per_passing_yd || 0.04,
@@ -59,22 +64,12 @@ module.exports = {
 
       createdLeague = {
         ...result._doc,
-        user_list: getUsersByEmails.bind(this, [
-          args.leagueInput.user_email,
-          args.leagueInput.opponent_email
-        ])
+        user_list: [user]
       };
 
       // Save league in both users league arrays
-      const user1 = await User.findOne({ email: args.leagueInput.user_email });
-      user1.leagues.push(league);
-      await user1.save();
-
-      const user2 = await User.findOne({
-        email: args.leagueInput.opponent_email
-      });
-      user2.leagues.push(league);
-      await user2.save();
+      user._doc.leagues.push(league);
+      await user.save();
 
       return createdLeague;
     } catch (err) {
@@ -82,6 +77,10 @@ module.exports = {
     }
   },
   deleteLeague: async args => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!");
+    }
+
     try {
       await League.deleteOne({ _id: args.leagueId });
       // ALSO DELETE ALL TEAMS AND MATCHES TIED TO THIS LEAGUE
@@ -92,15 +91,54 @@ module.exports = {
       throw err;
     }
   },
-  addUserToLeague: () => {},
-  leagues: async () => {
+  addUserToLeague: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!");
+    }
+
     try {
-      const leagues = await League.find();
+      const league = getLeague(args.league_id);
+
+      const user = await User.findById(req.userId);
+      if (!user) {
+        throw new Error("User not found.");
+      }
+
+      const userInLeague = await league._doc.user_list.findById(req.userId);
+      if (!userInLeague) {
+        throw new Error("You are not part of this league.");
+      }
+
+      league._doc.user_list.push(user);
+      await league.save();
+
+      return transformLeague(league);
+    } catch (err) {
+      throw err;
+    }
+  },
+  leagues: async (args, req) => {
+    try {
+      await checkAuthAndReturnUser(req);
+
+      const leagues = await League.find({ user_list: req.userId });
       return leagues.map(league => {
         return transformLeague(league);
       });
     } catch (err) {
       throw err;
     }
+  },
+  userLeagues: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!");
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    return getLeagues(req.userId);
   }
 };
