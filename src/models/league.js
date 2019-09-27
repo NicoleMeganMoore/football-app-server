@@ -16,6 +16,10 @@ const leagueSchema = new Schema(
         ref: "User"
       }
     ],
+    opponent: {
+      type: String,
+      required: true
+    },
     settings: {
       pts_per_passing_yd: {
         type: Number,

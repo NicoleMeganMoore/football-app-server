@@ -36,6 +36,7 @@ module.exports = buildSchema(`
   type League {
     _id: ID!
     id: Int!
+    opponent: String!
     league_name: String!
     user_list: [User!]!
     settings: Settings!
@@ -77,6 +78,7 @@ module.exports = buildSchema(`
   }
 
   input LeagueInput {
+    opponent: String!
     league_name: String
     pts_per_passing_yd: Float
     pts_per_passing_td: Int

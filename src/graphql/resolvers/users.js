@@ -1,9 +1,12 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
 
 const User = require("../../models/user");
 
 const { transformUser } = require("./helperFunctions");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 module.exports = {
   createUser: async args => {
@@ -58,6 +61,7 @@ module.exports = {
         expiresIn: "1h"
       }
     );
+
     return { userId: user.id, token: token, tokenExpiration: 1 };
   }
 };

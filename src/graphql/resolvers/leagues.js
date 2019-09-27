@@ -1,7 +1,9 @@
 const User = require("../../models/user");
 const League = require("../../models/league");
+const sgMail = require("@sendgrid/mail");
 
 const { checkAuthAndReturnUser } = require("./helperFunctions");
+const { leagueInviteEmail } = require("../../emailTemplates/LeagueInviteEmail");
 
 const {
   transformLeague,
@@ -41,7 +43,8 @@ module.exports = {
         league_name:
           args.leagueInput.league_name || `${user._doc.first_name}'s League`,
         user_list: [user._doc._id],
-        // user_list: [creator],
+        owner: user._doc._id,
+        opponent: args.leagueInput.opponent,
         settings: {
           pts_per_passing_yd: defaultLeagueSettings.pts_per_passing_yd || 0.04,
           pts_per_passing_td: defaultLeagueSettings.pts_per_passing_td || 4,
@@ -62,6 +65,10 @@ module.exports = {
       let createdLeague;
       const result = await league.save();
 
+      if (!result) {
+        throw new Error("Unable to save league");
+      }
+
       createdLeague = {
         ...result._doc,
         user_list: [user]
@@ -70,6 +77,22 @@ module.exports = {
       // Save league in both users league arrays
       user._doc.leagues.push(league);
       await user.save();
+
+      // Send invitation to opponent
+      const msg = {
+        to: args.leagueInput.opponent,
+        from: {
+          email: "draftwarsapp@gmail.com",
+          name: "DraftWars"
+        },
+        subject: "You've been invited to join a DraftWars league!",
+        // text: "and easy to do anywhere, even with Node.js",
+        html: leagueInviteEmail(
+          `${user._doc.first_name} ${user._doc.last_name}`,
+          `http://localhost:3003/invite/${createdLeague._id}`
+        )
+      };
+      await sgMail.send(msg);
 
       return createdLeague;
     } catch (err) {
