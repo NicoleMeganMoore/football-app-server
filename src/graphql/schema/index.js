@@ -107,8 +107,10 @@ module.exports = buildSchema(`
 
   type RootQuery {
     users: [User!]!
+    user: User!
     teams: [Team!]!
     leagues: [League!]!
+    league(league_id: String!): League!
     userLeagues: [League]!
     matches: [Match!]!
     login(email: String!, password: String!): AuthData!

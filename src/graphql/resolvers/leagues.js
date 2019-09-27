@@ -127,10 +127,15 @@ module.exports = {
         throw new Error("User not found.");
       }
 
+      // Change this to check if user is the opponent in the league
       const userInLeague = await league._doc.user_list.findById(req.userId);
       if (!userInLeague) {
         throw new Error("You are not part of this league.");
       }
+
+      // These 2 probably wont happen if we are checking for the opponent, but just in case...
+      // throw error if there are already 2 users in the league
+      // throw error if the new user email is the same as the exising email user
 
       league._doc.user_list.push(user);
       await league.save();
@@ -148,6 +153,15 @@ module.exports = {
       return leagues.map(league => {
         return transformLeague(league);
       });
+    } catch (err) {
+      throw err;
+    }
+  },
+  league: async (args, req) => {
+    try {
+      await checkAuthAndReturnUser(req);
+      const league = await League.findById(args.league_id);
+      return transformLeague(league);
     } catch (err) {
       throw err;
     }

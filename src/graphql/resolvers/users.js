@@ -4,7 +4,7 @@ const sgMail = require("@sendgrid/mail");
 
 const User = require("../../models/user");
 
-const { transformUser } = require("./helperFunctions");
+const { transformUser, checkAuthAndReturnUser } = require("./helperFunctions");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -39,6 +39,14 @@ module.exports = {
       return users.map(user => {
         return transformUser(user);
       });
+    } catch (err) {
+      throw err;
+    }
+  },
+  user: async (args, req) => {
+    try {
+      const user = await checkAuthAndReturnUser(req);
+      return transformUser(user);
     } catch (err) {
       throw err;
     }
