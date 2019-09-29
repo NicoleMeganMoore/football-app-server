@@ -43,9 +43,9 @@ module.exports = {
       throw err;
     }
   },
-  user: async (args, req) => {
+  user: async (args, req, res) => {
     try {
-      const user = await checkAuthAndReturnUser(req);
+      const user = await checkAuthAndReturnUser(req, res);
       return transformUser(user);
     } catch (err) {
       throw err;
@@ -70,6 +70,60 @@ module.exports = {
       }
     );
 
-    return { userId: user.id, token: token, tokenExpiration: 1 };
+    const refreshToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_REFRESH_KEY,
+      {
+        expiresIn: "7d"
+      }
+    );
+
+    return {
+      userId: user.id,
+      tokens: { accessToken: token, refreshToken: refreshToken },
+      tokenExpiration: 1
+    };
+  },
+  token: async (args, req, res) => {
+    const refreshToken = args.refreshToken;
+
+    if (!refreshToken) {
+      throw new Error(req.errorName.INVALID_REFRESH_TOKEN);
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
+    } catch (err) {
+      req.isRefreshValid = false;
+      throw new Error(req.errorName.INVALID_REFRESH_TOKEN);
+    }
+
+    if (!decodedToken) {
+      throw new Error(req.errorName.INVALID_REFRESH_TOKEN);
+    }
+
+    // Create new access and refresh tokens using the same user details
+    const newAccessToken = jwt.sign(
+      { userId: decodedToken.userId, email: decodedToken.email },
+      process.env.JWT_KEY,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { userId: decodedToken.userId, email: decodedToken.email },
+      process.env.JWT_REFRESH_KEY,
+      {
+        expiresIn: "7d"
+      }
+    );
+
+    return {
+      userId: decodedToken.userId,
+      tokens: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+      tokenExpiration: 1
+    };
   }
 };

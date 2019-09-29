@@ -5,9 +5,9 @@ const Team = require("../../models/team");
 
 const { dateToString } = require("../../helpers/date");
 
-const checkAuthAndReturnUser = async req => {
+const checkAuthAndReturnUser = async (req, res) => {
   if (!req.isAuth) {
-    throw new Error("Unauthenticated!");
+    throw new Error(req.errorName.UNAUTHENTICATED);
   }
   const user = await User.findById(req.userId);
   if (!user) {
@@ -15,6 +15,7 @@ const checkAuthAndReturnUser = async req => {
   }
   return user;
 };
+
 const transformUser = user => {
   return {
     ...user._doc,

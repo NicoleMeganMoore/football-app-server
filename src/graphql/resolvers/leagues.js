@@ -145,10 +145,9 @@ module.exports = {
       throw err;
     }
   },
-  leagues: async (args, req) => {
+  leagues: async (args, req, res) => {
     try {
-      await checkAuthAndReturnUser(req);
-
+      await checkAuthAndReturnUser(req, res);
       const leagues = await League.find({ user_list: req.userId });
       return leagues.map(league => {
         return transformLeague(league);
@@ -157,9 +156,9 @@ module.exports = {
       throw err;
     }
   },
-  league: async (args, req) => {
+  league: async (args, req, res) => {
     try {
-      await checkAuthAndReturnUser(req);
+      await checkAuthAndReturnUser(req, res);
       const league = await League.findById(args.league_id);
       return transformLeague(league);
     } catch (err) {

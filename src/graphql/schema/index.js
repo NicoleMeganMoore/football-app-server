@@ -13,10 +13,15 @@ module.exports = buildSchema(`
     createdAt: String!
   }
 
+  type tokenData {
+    accessToken: String!
+    refreshToken: String!
+  }
+
   type AuthData {
     userId: ID!
-    token: String!
     tokenExpiration: Int!
+    tokens: tokenData!
   }
 
   type Settings {
@@ -114,6 +119,7 @@ module.exports = buildSchema(`
     userLeagues: [League]!
     matches: [Match!]!
     login(email: String!, password: String!): AuthData!
+    token(refreshToken: String!): AuthData!
   }
 
   type RootMutation {
