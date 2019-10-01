@@ -43,9 +43,9 @@ module.exports = {
       throw err;
     }
   },
-  user: async (args, req, res) => {
+  user: async (args, req) => {
     try {
-      const user = await checkAuthAndReturnUser(req, res);
+      const user = await checkAuthAndReturnUser(req);
       return transformUser(user);
     } catch (err) {
       throw err;

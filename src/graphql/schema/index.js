@@ -44,6 +44,7 @@ module.exports = buildSchema(`
     opponent: String!
     league_name: String!
     user_list: [User!]!
+    matches: [Match!]!
     settings: Settings!
     updatedAt: String!
     createdAt: String!
@@ -116,7 +117,6 @@ module.exports = buildSchema(`
     teams: [Team!]!
     leagues: [League!]!
     league(league_id: String!): League!
-    userLeagues: [League]!
     matches: [Match!]!
     login(email: String!, password: String!): AuthData!
     token(refreshToken: String!): AuthData!
@@ -125,10 +125,10 @@ module.exports = buildSchema(`
   type RootMutation {
     createUser(userInput: UserInput): User
     createLeague(leagueInput: LeagueInput): League
-    addUserToLeague(leagueId: ID!, userEmail: String!): League
+    addUserToLeague(leagueId: ID!): League
     createMatch(matchInput: MatchInput): Match
     createTeam(teamInput: TeamInput): Team
-    deleteLeague(leagueId: ID!): Boolean
+    cancelLeagueInvitation(leagueId: String!): Boolean
     deleteMatch(matchId: ID!): Boolean
   }
 

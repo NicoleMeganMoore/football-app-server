@@ -5,12 +5,7 @@ const sgMail = require("@sendgrid/mail");
 const { checkAuthAndReturnUser } = require("./helperFunctions");
 const { leagueInviteEmail } = require("../../emailTemplates/LeagueInviteEmail");
 
-const {
-  transformLeague,
-  getUsersByEmails,
-  getLeague,
-  getLeagues
-} = require("./helperFunctions");
+const { transformLeague, getLeague, getLeagues } = require("./helperFunctions");
 
 const defaultLeagueSettings = {
   pts_per_passing_yd: 0.04,
@@ -32,7 +27,6 @@ module.exports = {
       throw new Error("Unauthenticated!");
     }
 
-    // Make sure both users exist in the DB
     try {
       const user = await User.findById(req.userId);
       if (!user) {
@@ -43,6 +37,7 @@ module.exports = {
         league_name:
           args.leagueInput.league_name || `${user._doc.first_name}'s League`,
         user_list: [user._doc._id],
+        matches: [],
         owner: user._doc._id,
         opponent: args.leagueInput.opponent,
         settings: {
@@ -99,55 +94,84 @@ module.exports = {
       throw new Error(err);
     }
   },
-  deleteLeague: async args => {
-    if (!req.isAuth) {
-      throw new Error("Unauthenticated!");
-    }
-
+  cancelLeagueInvitation: async (args, req) => {
     try {
-      await League.deleteOne({ _id: args.leagueId });
-      // ALSO DELETE ALL TEAMS AND MATCHES TIED TO THIS LEAGUE
-      // DO WE REALLY WANT TO DO THIS?
-      // const newLeagueList = League.find()
+      const user = await checkAuthAndReturnUser(req);
+
+      const league = await League.findOne({ id: args.leagueId });
+      if (!league) {
+        throw new Error("League not found.");
+      }
+
+      const isPendingInvitation = league.user_list.length <= 1;
+      if (!isPendingInvitation) {
+        throw new Error(
+          "League invitation has already been accepted. Unable to delete"
+        );
+      }
+
+      const isUserOwner = league._doc.user_list.includes(user._id);
+      if (!isUserOwner) {
+        throw new Error(req.errorName.FORBIDDEN);
+      }
+
+      const leagueIndex = user._doc.leagues.indexOf(league._doc._id);
+      if (!leagueIndex || leagueIndex === -1) {
+        throw new Error("Unable to find league in user object");
+      }
+
+      // Delete league id from user first, in case something goes wrong the league is not deleted
+      user._doc.leagues.splice(leagueIndex, 1);
+      await user.save();
+
+      await League.deleteOne({ id: args.leagueId });
+
       return true;
     } catch (err) {
       throw err;
     }
   },
   addUserToLeague: async (args, req) => {
-    if (!req.isAuth) {
-      throw new Error("Unauthenticated!");
-    }
-
     try {
-      const league = getLeague(args.league_id);
-
-      const user = await User.findById(req.userId);
+      const user = await checkAuthAndReturnUser(req);
       if (!user) {
         throw new Error("User not found.");
       }
 
-      // Change this to check if user is the opponent in the league
-      const userInLeague = await league._doc.user_list.findById(req.userId);
+      const league = await League.findById(args.leagueId);
+      if (!league) {
+        throw new Error("League not found.");
+      }
+
+      const isOpponentCreator = league._doc.user_list.includes(user._doc._id);
+      if (isOpponentCreator) {
+        throw new Error("User invited themself to this league.");
+      }
+
+      const userInLeague = league.opponent === user._doc.email;
       if (!userInLeague) {
         throw new Error("You are not part of this league.");
       }
 
-      // These 2 probably wont happen if we are checking for the opponent, but just in case...
-      // throw error if there are already 2 users in the league
-      // throw error if the new user email is the same as the exising email user
+      const leagueFull = league.user_list.length === 2;
+      if (leagueFull) {
+        throw new Error("This league is already full.");
+      }
 
       league._doc.user_list.push(user);
       await league.save();
+
+      user.leagues.push(league);
+      await user.save();
 
       return transformLeague(league);
     } catch (err) {
       throw err;
     }
   },
-  leagues: async (args, req, res) => {
+  leagues: async (args, req) => {
     try {
-      await checkAuthAndReturnUser(req, res);
+      await checkAuthAndReturnUser(req);
       const leagues = await League.find({ user_list: req.userId });
       return leagues.map(league => {
         return transformLeague(league);
@@ -156,25 +180,13 @@ module.exports = {
       throw err;
     }
   },
-  league: async (args, req, res) => {
+  league: async (args, req) => {
     try {
-      await checkAuthAndReturnUser(req, res);
+      await checkAuthAndReturnUser(req);
       const league = await League.findById(args.league_id);
       return transformLeague(league);
     } catch (err) {
       throw err;
     }
-  },
-  userLeagues: async (args, req) => {
-    if (!req.isAuth) {
-      throw new Error("Unauthenticated!");
-    }
-
-    const user = await User.findById(req.userId);
-    if (!user) {
-      throw new Error("User not found!");
-    }
-
-    return getLeagues(req.userId);
   }
 };

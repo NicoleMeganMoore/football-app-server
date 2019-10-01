@@ -16,6 +16,12 @@ const leagueSchema = new Schema(
         ref: "User"
       }
     ],
+    matches: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Match"
+      }
+    ],
     opponent: {
       type: String,
       required: true

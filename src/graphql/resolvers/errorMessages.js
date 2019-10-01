@@ -5,9 +5,14 @@ module.exports = [
     statusCode: 401
   },
   {
+    name: "EXPIRED_ACCESS_TOKEN",
+    message: "Expired Token",
+    statusCode: 401
+  },
+  {
     name: "INVALID_REFRESH_TOKEN",
     message: "Invalid Refresh Token",
-    statusCode: 403
+    statusCode: 401
   }
 ];
 

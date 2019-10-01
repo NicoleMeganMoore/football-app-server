@@ -17,6 +17,7 @@ module.exports = (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, process.env.JWT_KEY);
   } catch (err) {
+    req.isTokenExpired = true;
     req.isAuth = false;
     return next();
   }

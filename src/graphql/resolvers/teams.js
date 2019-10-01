@@ -5,9 +5,9 @@ const Team = require("../../models/team");
 const { checkAuthAndReturnUser, transformTeam } = require("./helperFunctions");
 
 module.exports = {
-  teams: async (args, req, res) => {
+  teams: async (args, req) => {
     try {
-      await checkAuthAndReturnUser(req, res);
+      await checkAuthAndReturnUser(req);
 
       const teams = await Team.find({ owner: req.userId });
       return teams.map(team => {

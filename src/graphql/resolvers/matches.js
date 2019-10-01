@@ -38,6 +38,10 @@ module.exports = {
       });
 
       const newMatch = await match.save();
+
+      league.matches.push(newMatch);
+      await league.save();
+
       return transformMatch(newMatch);
     } catch (err) {
       throw err;
