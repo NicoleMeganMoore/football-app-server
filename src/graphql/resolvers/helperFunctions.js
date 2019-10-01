@@ -38,7 +38,10 @@ const checkAuthAndReturnUser = async req => {
 const transformUser = user => {
   return {
     ...user._doc,
-    leagues: leagueLoader.loadMany(user._doc.leagues),
+    leagues: () =>
+      leagueLoader.loadMany(
+        user._doc.leagues.map(leagueId => leagueId.toString())
+      ),
     createdAt: dateToString(user._doc.createdAt),
     updatedAt: dateToString(user._doc.updatedAt)
   };
@@ -46,8 +49,14 @@ const transformUser = user => {
 const transformLeague = league => {
   return {
     ...league._doc,
-    user_list: userLoader.loadMany(league._doc.user_list),
-    matches: matchLoader.loadMany(league._doc.matches),
+    user_list: () =>
+      userLoader.loadMany(
+        league._doc.user_list.map(userId => userId.toString())
+      ),
+    matches: () =>
+      matchLoader.loadMany(
+        league._doc.matches.map(matchId => matchId.toString())
+      ),
     createdAt: dateToString(league._doc.createdAt),
     updatedAt: dateToString(league._doc.updatedAt)
   };
@@ -55,9 +64,9 @@ const transformLeague = league => {
 const transformTeam = team => {
   return {
     ...team._doc,
-    league: leagueLoader.load(team._doc.league),
-    match: matchLoader.load(team._doc.match),
-    owner: userLoader.load(team._doc.owner),
+    league: getLeague.bind(this, team._doc.league),
+    match: getMatch.bind(this, team._doc.match),
+    owner: getUser.bind(this, team._doc.owner),
     createdAt: dateToString(team._doc.createdAt),
     updatedAt: dateToString(team._doc.updatedAt)
   };
@@ -65,16 +74,17 @@ const transformTeam = team => {
 const transformMatch = match => {
   return {
     ...match._doc,
-    teams: teamLoader.loadMany(match._doc.teams),
-    winner: userLoader.load(match._doc.winner),
-    league: leagueLoader.load(match._doc.league),
+    teams: () =>
+      teamLoader.loadMany(match._doc.teams.map(teamId => teamId.toString())),
+    winner: getUser.bind(this, match._doc.winner),
+    league: getLeague.bind(this, match._doc.league),
     createdAt: dateToString(match._doc.createdAt),
     updatedAt: dateToString(match._doc.updatedAt)
   };
 };
 const getUser = async userId => {
   try {
-    const user = await userLoader.load(userId);
+    const user = await userLoader.load(userId.toString());
     return user;
   } catch (err) {
     throw err;
@@ -92,7 +102,7 @@ const getUsers = async userIds => {
 };
 const getLeague = async leagueId => {
   try {
-    const league = await leagueLoader.load(leagueId);
+    const league = await leagueLoader.load(leagueId.toString());
     return league;
   } catch (err) {
     throw err;
@@ -110,7 +120,7 @@ const getLeagues = async leagueIds => {
 };
 const getMatch = async matchId => {
   try {
-    const match = await matchLoader.load(matchId);
+    const match = await matchLoader.load(matchId.toString());
     return match;
   } catch (err) {
     throw err;
@@ -128,7 +138,7 @@ const getMatches = async matchIds => {
 };
 const getTeam = async teamId => {
   try {
-    const team = await teamLoader.load(teamId);
+    const team = await teamLoader.load(teamId.toString());
     return team;
   } catch (err) {
     throw err;
