@@ -34,7 +34,7 @@ app.use(
   graphqlHttp({
     schema: graphQlSchema,
     rootValue: graphQlResolvers,
-    // graphiql: true, // Sandbox GUI at "/graphql"
+    graphiql: true, // Sandbox GUI at "/graphql"
     customFormatErrorFn: err => {
       return formatError.getError(err);
     }
