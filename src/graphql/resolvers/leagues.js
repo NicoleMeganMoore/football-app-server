@@ -1,11 +1,13 @@
+const sgMail = require("@sendgrid/mail");
+
 const User = require("../../models/user");
 const League = require("../../models/league");
-const sgMail = require("@sendgrid/mail");
+// const pubsub = require("../../pubsub");
+import pubsub from "../../pubsub";
 
 const { checkAuthAndReturnUser } = require("./helperFunctions");
 const { leagueInviteEmail } = require("../../emailTemplates/LeagueInviteEmail");
-
-const { transformLeague, getLeague, getLeagues } = require("./helperFunctions");
+const { transformLeague } = require("./helperFunctions");
 
 const defaultLeagueSettings = {
   pts_per_passing_yd: 0.04,
@@ -23,11 +25,11 @@ const defaultLeagueSettings = {
 
 module.exports = {
   createLeague: async (args, req) => {
-    if (!req.isAuth) {
-      throw new Error("Unauthenticated!");
-    }
-
     try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated!");
+      }
+
       const user = await User.findById(req.userId);
       if (!user) {
         throw new Error("User not found.");
@@ -73,6 +75,14 @@ module.exports = {
       user._doc.leagues.push(league);
       await user.save();
 
+      console.log("CREATING LEAGUE");
+      console.log("pubsub stuff:");
+      // console.log(
+      //   pubsub.publish("leagueAdded", { leagueAdded: createdLeague })
+      // );
+      console.log(pubsub.publish());
+      // pubsub.publish("leagueAdded", { leagueAdded: createdLeague });
+
       // Send invitation to opponent
       const msg = {
         to: args.leagueInput.opponent,
@@ -87,8 +97,9 @@ module.exports = {
           `http://localhost:3003/invite/${createdLeague._id}`
         )
       };
-      await sgMail.send(msg);
+      sgMail.send(msg);
 
+      console.log("RETURNING NEW LEAGUE");
       return createdLeague;
     } catch (err) {
       throw new Error(err);
@@ -160,6 +171,11 @@ module.exports = {
 
       league._doc.user_list.push(user);
       await league.save();
+
+      // Subscribe to updates to this match (can this work when the team inside the match is updated?)
+      // await req.pubsub.publish("readyToDraft", {
+      //   readyToDraft: league._doc._id
+      // });
 
       user.leagues.push(league);
       await user.save();

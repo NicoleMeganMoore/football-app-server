@@ -21,15 +21,22 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^6.4.0",
+    "apollo-server-express": "^2.5.0-rc.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dataloader": "^1.4.0",
     "easygraphql-format-error": "0.0.3",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "graphql": "^14.5.4",
+    "graphql": "^14.5.8",
+    "graphql-subscriptions": "^1.1.0",
+    "graphql-tools": "^4.0.5",
+    "graphql-yoga": "^1.18.3",
+    "http": "0.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.7.0",
-    "mongoose-auto-increment": "^5.0.1"
+    "mongoose-auto-increment": "^5.0.1",
+    "subscriptions-transport-ws": "^0.8.3"
   }
 }

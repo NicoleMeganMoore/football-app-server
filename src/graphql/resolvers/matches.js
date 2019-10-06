@@ -11,7 +11,7 @@ module.exports = {
         return transformMatch(match);
       });
     } catch (err) {
-      throw err;
+      return err;
     }
   },
   deleteMatch: async args => {
@@ -22,10 +22,10 @@ module.exports = {
       // const newLeagueList = League.find()
       return true;
     } catch (err) {
-      throw err;
+      return err;
     }
   },
-  createMatch: async args => {
+  createMatch: async (args, req) => {
     try {
       const league = await League.findOne({ id: args.matchInput.league_id });
       if (!league) {
@@ -39,12 +39,15 @@ module.exports = {
 
       const newMatch = await match.save();
 
+      // Subscribe to updates to this match (can this work when the team inside the match is updated?)
+      // pubsub.publish("matchUpdated", { matchUpdated: match });
+
       league.matches.push(newMatch);
       await league.save();
 
       return transformMatch(newMatch);
     } catch (err) {
-      throw err;
+      return err;
     }
   }
 };

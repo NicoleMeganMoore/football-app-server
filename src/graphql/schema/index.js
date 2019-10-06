@@ -132,8 +132,15 @@ module.exports = buildSchema(`
     deleteMatch(matchId: ID!): Boolean
   }
 
+  type RootSubscription {
+    matchUpdated(matchId: String!): Match
+    readyToDraft: League
+    leagueAdded: League
+  }
+
   schema {
     query: RootQuery
     mutation: RootMutation
+    subscription: RootSubscription
   }
 `);

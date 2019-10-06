@@ -14,14 +14,14 @@ module.exports = {
         return transformTeam(team);
       });
     } catch (err) {
-      throw err;
+      return err;
     }
   },
   createTeam: async (args, req) => {
-    if (!req.isAuth) {
-      throw new Error("Unauthenticated!");
-    }
     try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated!");
+      }
       // Change this to real match ID
       const match = await Match.findOne({ id: args.teamInput.match_id });
       if (!match) {
@@ -49,7 +49,7 @@ module.exports = {
 
       return transformTeam(newTeam);
     } catch (err) {
-      throw err;
+      return err;
     }
   }
 };
