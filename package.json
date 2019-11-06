@@ -35,7 +35,7 @@
     "graphql-yoga": "^1.18.3",
     "http": "0.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.7.0",
+    "mongoose": "^5.7.5",
     "mongoose-auto-increment": "^5.0.1",
     "subscriptions-transport-ws": "^0.8.3"
   }
